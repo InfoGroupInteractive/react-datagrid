@@ -241,6 +241,16 @@ module.exports = React.createClass({
 
             state.startIndex = renderStartIndex
 
+            // Check for infinite scroll
+            if (props.enableInfiniteScroll) {
+                var rowCountBuffer = this.getRowCountBuffer(props)
+                var currentPage = Math.ceil(renderStartIndex / rowCountBuffer)
+                var endIndex = this.getRenderEndIndex(props, state)
+                if ((endIndex - renderStartIndex) < (props.pageThreshold || (rowCountBuffer / 3)) && typeof props.onPageChange === 'function') {
+                    props.onPageChange(currentPage + 1)
+                }
+            }
+
             // var data = this.prepareData(props)
 
             // if (renderStartIndex >= data.length){
@@ -298,21 +308,11 @@ module.exports = React.createClass({
 
     getRenderEndIndex: function(props, state){
         var startIndex = state.startIndex
-        var rowCount   = props.rowCountBuffer
+        var rowCount   = this.getRowCountBuffer(props)
         var length     = props.data.length
 
         if (state.groupData){
             length += state.groupData.groupsCount
-        }
-
-        if (!rowCount){
-            var maxHeight
-            if (props.style && typeof props.style.height === 'number'){
-                maxHeight = props.style.height
-            } else {
-                maxHeight = window.screen.height
-            }
-            rowCount = Math.floor(maxHeight / props.rowHeight)
         }
 
         var endIndex = startIndex + rowCount
@@ -322,6 +322,22 @@ module.exports = React.createClass({
         }
 
         return endIndex
+    },
+
+    getRowCountBuffer: function(props) {
+        var rowCount = props.rowCountBuffer
+
+        if (!rowCount) {
+            var maxHeight
+            if (props.style && typeof props.style.height === 'number'){
+                maxHeight = props.style.height
+            } else {
+                maxHeight = window.screen.height
+            }
+            rowCount = Math.floor(maxHeight / props.rowHeight)
+        }
+
+        return rowCount
     },
 
     onDropColumn: function(index, dropIndex){
