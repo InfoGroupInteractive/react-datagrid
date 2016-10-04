@@ -13,6 +13,7 @@ var setupColumnDrag   = require('./setupColumnDrag')
 var setupColumnResize = require('./setupColumnResize')
 
 var normalize   = require('react-style-normalizer')
+var _ = require('lodash');
 
 function emptyFn(){}
 
@@ -116,6 +117,12 @@ module.exports = React.createClass({
         var cols = props.virtualColumnRendering && props.endColIndex !== null ?
                     props.columns.slice(props.startColIndex, props.endColIndex + 1) :
                     props.columns
+
+        if (props.fixedColumns.length) {
+            _.remove(cols, function(column) { return column.fixed; });
+            cols = props.fixedColumns.concat(cols);
+        }
+
         var scrollLeft = props.virtualColumnRendering ?
                             (props.leftOffset || 0) :
                             props.scrollLeft;

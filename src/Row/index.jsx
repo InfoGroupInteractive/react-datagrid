@@ -8,6 +8,7 @@ var Cell        = require('../Cell')
 var CellFactory = React.createFactory(Cell)
 var ReactMenu = require('react-menus')
 var ReactMenuFactory = React.createFactory(ReactMenu)
+var _ = require('lodash');
 
 module.exports = React.createClass({
 
@@ -40,6 +41,11 @@ module.exports = React.createClass({
     render: function() {
         var props = this.prepareProps(this.props)
         var cols = props.virtualColumnRendering && props.endColIndex !== null ? props.columns.slice(props.startColIndex, props.endColIndex + 1) : props.columns
+
+        if (props.fixedColumns.length) {
+            _.remove(cols, function(column) { return column.fixed; });
+            cols = props.fixedColumns.concat(cols);
+        }
 
         var cells = props.children || cols
                 .map(this.renderCell.bind(this, this.props))

@@ -27,6 +27,7 @@ var getGroupedRows = require('./render/getGroupedRows')
 var renderMenu     = require('./render/renderMenu')
 
 var preventDefault = require('./utils/preventDefault')
+var _ = require('lodash');
 
 var isArray = Array.isArray
 
@@ -213,7 +214,7 @@ module.exports = React.createClass({
             var startOffset = scrollLeft;
 
             // get start column index
-            for (var i = 0; i < props.columns.length; i++){
+            for (var i = props.fixedColumns.length; i < props.columns.length; i++){
                 startOffset -= props.columns[i].width;
                 if (startOffset <= 0){
                     state.startColIndex = i;
@@ -281,7 +282,7 @@ module.exports = React.createClass({
         var endOffset = props.totalColumnWidth - (props.style.width + state.scrollLeft);
 
         // get end column index
-        for (var i = props.columns.length - 1; i >= 0; i--){
+        for (var i = props.columns.length - 1; i >= props.fixedColumns.length; i--){
             if (!props.columns[i].width){
                 endColIndex = null;
                 break;
@@ -298,6 +299,10 @@ module.exports = React.createClass({
     },
 
     getLeftOffset: function(props, startColIndex, endColIndex) {
+        if (props.fixedColumns.length) {
+            return 0;
+        }
+
         var visibleColumnsWidth = 0,
             leftOffset = 0,
             counter;
@@ -313,6 +318,37 @@ module.exports = React.createClass({
         }
 
         return leftOffset;
+    },
+
+    adjustStartColumnWidth: function(props, state) {
+        if (!props.fixedColumns.length) {
+            return;
+        }
+
+        var visibleColumnsWidth = props.fixedColumnWidth;
+        var width = 0;
+        var counter;
+
+        if (props.columns.length === props.endColIndex + 1) {
+            for (counter = props.startColIndex + 1; counter <= props.endColIndex; counter++) {
+                visibleColumnsWidth += props.columns[counter].width;
+            }
+
+            if (visibleColumnsWidth && props.style.width) {
+                width = props.style.width - visibleColumnsWidth;
+            }
+
+            width = width < 0 ? 0 : width;
+
+            if (width === 0) {
+                props.startColIndex += 1;
+            } else {
+                props.columns[props.startColIndex].sizeStyle = {
+                    width: width,
+                    minWidth: width
+                };
+            }
+        }
     },
 
     getRenderEndIndex: function(props, state){
@@ -455,7 +491,10 @@ module.exports = React.createClass({
             startColIndex: state.startColIndex,
             endColIndex: endColIndex,
             leftOffset: props.virtualColumnRendering ? this.getLeftOffset(props, state.startColIndex, endColIndex) : 0,
-            virtualColumnRendering: props.virtualColumnRendering
+            virtualColumnRendering: props.virtualColumnRendering,
+
+            fixedColumns     : props.fixedColumns,
+            fixedColumnWidth : props.fixedColumnWidth
         })
     },
 
@@ -685,10 +724,16 @@ module.exports = React.createClass({
             // onRowClick: this.handleRowClick,
             selected        : props.selected == null?
                 state.defaultSelected:
-                props.selected
+                props.selected,
+
+            fixedColumns    : props.fixedColumns,
+            fixedColumnWidth: props.fixedColumnWidth
         }, props)
 
         wrapperProps.columns    = getVisibleColumns(props, state)
+
+        state.scrollLeft && this.adjustStartColumnWidth(wrapperProps, state);
+
         wrapperProps.tableProps = this.getTableProps(wrapperProps, state)
 
         return (props.WrapperFactory || WrapperFactory)(wrapperProps)
@@ -1141,6 +1186,7 @@ module.exports = React.createClass({
         }, this)
 
         this.prepareColumnSizes(props, state)
+        this.prepareFixedColumns(props, state);
 
         props.columns.forEach(this.prepareColumnStyle.bind(this, props))
     },
@@ -1184,6 +1230,20 @@ module.exports = React.createClass({
 
         props.columnFlexCount  = flexCount
         props.totalColumnWidth = totalWidth
+    },
+
+    prepareFixedColumns: function(props) {
+        var fixedColumnWidth = 0;
+        var fixedColumns = _.filter(props.columns, function(column) {
+            return column.fixed;
+        });
+
+        _.each(fixedColumns, function(column) {
+            fixedColumnWidth += !column.flexible ? column.width : column.minWidth;
+        });
+
+        props.fixedColumns = fixedColumns;
+        props.fixedColumnWidth = fixedColumnWidth;
     },
 
     prepareResizeProxy: function(props, state){
