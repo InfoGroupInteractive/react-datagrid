@@ -71,7 +71,7 @@ module.exports = React.createClass({
         var dragIndex = this.state.dragColumnIndex
         var dropIndex = this.state.dropIndex
 
-        if (dropIndex != null){
+        if (dropIndex != null && !this.props.allColumns[dropIndex].fixed) {
 
             //since we need the indexes in the array of all columns
             //not only in the array of the visible columns
@@ -432,7 +432,7 @@ module.exports = React.createClass({
             return
         }
 
-        setupColumnDrag(this, this.props, column, event)
+        !column.fixed && setupColumnDrag(this, this.props, column, event)
     },
 
     onResizeDragStart: function(config){
