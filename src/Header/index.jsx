@@ -114,13 +114,13 @@ module.exports = React.createClass({
 
     render: function() {
         var props = this.prepareProps(this.props)
-        var cols = props.virtualColumnRendering && props.endColIndex !== null ?
-                    props.columns.slice(props.startColIndex, props.endColIndex + 1) :
-                    props.columns
+        var cols = props.columns;
 
-        if (props.fixedColumns.length) {
-            _.remove(cols, function(column) { return column.fixed; });
-            cols = props.fixedColumns.concat(cols);
+        if (props.virtualColumnRendering && props.endColIndex !== null) {
+            cols = props.columns.slice(props.startColIndex, props.endColIndex + 1);
+            if (props.fixedColumns.length && props.startColIndex >= props.fixedColumns.length) {
+                cols = props.fixedColumns.concat(cols);
+            }
         }
 
         var scrollLeft = props.virtualColumnRendering ?

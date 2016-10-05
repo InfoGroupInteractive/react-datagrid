@@ -111,13 +111,13 @@ module.exports = React.createClass({
         var emptyCells = [];
         var height = this.state.height !== 0 && this.state.height;
         var rowClass, cellClass, cellWidth, rowHeight, offset;
-        var cols = this.props.virtualColumnRendering && this.props.endColIndex !== null ?
-                    this.props.columns.slice(this.props.startColIndex, this.props.endColIndex + 1) :
-                    this.props.columns;
+        var cols = this.props.columns;
 
-        if (this.props.fixedColumns.length) {
-            _.remove(cols, function(column) { return column.fixed; });
-            cols = this.props.fixedColumns.concat(cols);
+        if (this.props.virtualColumnRendering && this.props.endColIndex !== null) {
+            cols = this.props.columns.slice(this.props.startColIndex, this.props.endColIndex + 1);
+            if (this.props.fixedColumns.length && this.props.startColIndex >= this.props.fixedColumns.length) {
+                cols = this.props.fixedColumns.concat(cols);
+            }
         }
 
         if ( height > this.props.renderCount * this.props.rowHeight ) {
@@ -142,9 +142,8 @@ module.exports = React.createClass({
                         cellClass += ' z-last';
                     }
 
-                    cellWidth = cols[j].sizeStyle.width ? {width: cols[j].sizeStyle.width, minWidth: cols[j].sizeStyle.width}
-                                                        : cols[j].width ? {width: cols[j].sizeStyle.width, minWidth: cols[j].sizeStyle.width}
-                                                        : {minWidth: cols[j].minWidth, WebkitFlex: 1, msFlex: 1, flex: 1};
+                    cellWidth = cols[j].width ? assign({width: cols[j].width, minWidth: cols[j].width}, {width: cols[j].sizeStyle.width, minWidth:cols[j].sizeStyle.width})
+                                              : {minWidth: cols[j].minWidth, WebkitFlex: 1, msFlex: 1, flex: 1};
 
                     emptyCells.push(
                         <div key={j} className={cellClass} style={cellWidth} />

@@ -215,7 +215,7 @@ module.exports = React.createClass({
 
             // get start column index
             for (var i = props.fixedColumns.length; i < props.columns.length; i++){
-                startOffset -= props.columns[i].width;
+                startOffset -= props.columns[i].width || props.columns[i].minWidth;
                 if (startOffset <= 0){
                     state.startColIndex = i;
                     break;
@@ -283,15 +283,10 @@ module.exports = React.createClass({
 
         // get end column index
         for (var i = props.columns.length - 1; i >= props.fixedColumns.length; i--){
-            if (!props.columns[i].width){
-                endColIndex = null;
+            endOffset -= props.columns[i].width || props.columns[i].minWidth;
+            if (endOffset <= 0){
+                endColIndex = i;
                 break;
-            } else {
-                endOffset -= props.columns[i].width;
-                if (endOffset <= 0){
-                    endColIndex = i;
-                    break;
-                }
             }
         }
 
@@ -331,14 +326,14 @@ module.exports = React.createClass({
 
         if (props.columns.length === props.endColIndex + 1) {
             for (counter = props.startColIndex + 1; counter <= props.endColIndex; counter++) {
-                visibleColumnsWidth += props.columns[counter].width;
+                visibleColumnsWidth += props.columns[counter].width || props.columns[counter].minWidth;
             }
 
             if (visibleColumnsWidth && props.style.width) {
                 width = props.style.width - visibleColumnsWidth;
             }
 
-            width = width < 0 ? 0 : width;
+            width = width < props.columns[props.startColIndex].minWidth ? 0 : width;
 
             if (width === 0) {
                 props.startColIndex += 1;
@@ -1179,14 +1174,18 @@ module.exports = React.createClass({
     ///
     ///////////////////////////////////////
     prepareColumns: function(props, state){
+        var fixedColumns = [];
+
         props.columns = props.columns.map(function(col, index){
             col = Column(col, props)
             col.index = index
+            col.fixed && fixedColumns.push(col);
             return col
         }, this)
 
+        props.fixedColumns = fixedColumns;
+
         this.prepareColumnSizes(props, state)
-        this.prepareFixedColumns(props, state);
 
         props.columns.forEach(this.prepareColumnStyle.bind(this, props))
     },
@@ -1214,15 +1213,18 @@ module.exports = React.createClass({
         var visibleColumns = getVisibleColumns(props, state)
         var totalWidth     = 0
         var flexCount      = 0
+        var fixedColumnWidth = 0;
 
         visibleColumns.forEach(function(column){
             column.minWidth = column.minWidth || props.columnMinWidth
 
             if (!column.flexible){
                 totalWidth += column.width
+                fixedColumnWidth += column.fixed ? column.width : 0;
                 return 0
             } else if (column.minWidth){
                 totalWidth += column.minWidth
+                fixedColumnWidth += column.fixed ? column.minWidth : 0;
             }
 
             flexCount++
@@ -1230,19 +1232,6 @@ module.exports = React.createClass({
 
         props.columnFlexCount  = flexCount
         props.totalColumnWidth = totalWidth
-    },
-
-    prepareFixedColumns: function(props) {
-        var fixedColumnWidth = 0;
-        var fixedColumns = _.filter(props.columns, function(column) {
-            return column.fixed;
-        });
-
-        _.each(fixedColumns, function(column) {
-            fixedColumnWidth += !column.flexible ? column.width : column.minWidth;
-        });
-
-        props.fixedColumns = fixedColumns;
         props.fixedColumnWidth = fixedColumnWidth;
     },
 
