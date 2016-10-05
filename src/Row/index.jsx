@@ -8,7 +8,7 @@ var Cell        = require('../Cell')
 var CellFactory = React.createFactory(Cell)
 var ReactMenu = require('react-menus')
 var ReactMenuFactory = React.createFactory(ReactMenu)
-var _ = require('lodash');
+var sliceColumns = require('../render/sliceColumns');
 
 module.exports = React.createClass({
 
@@ -40,14 +40,7 @@ module.exports = React.createClass({
 
     render: function() {
         var props = this.prepareProps(this.props)
-        var cols = props.columns;
-
-        if (props.virtualColumnRendering && props.endColIndex !== null) {
-            cols = props.columns.slice(props.startColIndex, props.endColIndex + 1);
-            if (props.fixedColumns.length && props.startColIndex >= props.fixedColumns.length) {
-                cols = props.fixedColumns.concat(cols);
-            }
-        }
+        var cols = sliceColumns(props);
 
         var cells = props.children || cols
                 .map(this.renderCell.bind(this, this.props))

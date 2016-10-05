@@ -11,9 +11,9 @@ var findIndexByName = require('../utils/findIndexByName')
 var Cell    = require('../Cell')
 var setupColumnDrag   = require('./setupColumnDrag')
 var setupColumnResize = require('./setupColumnResize')
+var sliceColumns = require('../render/sliceColumns');
 
 var normalize   = require('react-style-normalizer')
-var _ = require('lodash');
 
 function emptyFn(){}
 
@@ -114,14 +114,7 @@ module.exports = React.createClass({
 
     render: function() {
         var props = this.prepareProps(this.props)
-        var cols = props.columns;
-
-        if (props.virtualColumnRendering && props.endColIndex !== null) {
-            cols = props.columns.slice(props.startColIndex, props.endColIndex + 1);
-            if (props.fixedColumns.length && props.startColIndex >= props.fixedColumns.length) {
-                cols = props.fixedColumns.concat(cols);
-            }
-        }
+        var cols = sliceColumns(props);
 
         var scrollLeft = props.virtualColumnRendering ?
                             (props.leftOffset || 0) :
