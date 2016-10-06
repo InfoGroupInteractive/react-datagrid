@@ -489,8 +489,8 @@ module.exports = React.createClass({
             leftOffset: props.virtualColumnRendering ? this.getLeftOffset(props, state.startColIndex, endColIndex) : 0,
             virtualColumnRendering: props.virtualColumnRendering,
 
-            fixedColumns     : props.fixedColumns,
-            fixedColumnWidth : props.fixedColumnWidth
+            fixedColumnRendering: props.fixedColumnRendering,
+            fixedColumns     : props.fixedColumns
         })
     },
 
@@ -722,8 +722,7 @@ module.exports = React.createClass({
                 state.defaultSelected:
                 props.selected,
 
-            fixedColumns    : props.fixedColumns,
-            fixedColumnWidth: props.fixedColumnWidth
+            fixedColumns    : props.fixedColumns
         }, props)
 
         wrapperProps.columns    = getVisibleColumns(props, state)
