@@ -4,6 +4,7 @@ var React    = require('react')
 var ReactDOM    = require('react-dom')
 var assign   = require('object-assign')
 var Scroller = require('react-virtual-scroller')
+var sliceColumns = require('../render/sliceColumns');
 
 module.exports = React.createClass({
 
@@ -110,6 +111,7 @@ module.exports = React.createClass({
         var emptyCells = [];
         var height = this.state.height !== 0 && this.state.height;
         var rowClass, cellClass, cellWidth, rowHeight, offset;
+        var cols = sliceColumns(this.props);
 
         if ( height > this.props.renderCount * this.props.rowHeight ) {
             emptyPixels = height - ((this.props.renderCount - 1) * this.props.rowHeight);
@@ -123,17 +125,18 @@ module.exports = React.createClass({
                 rowClass += (offset % 2 ? ' z-odd' : ' z-even');
                 rowHeight = { height: this.props.rowHeight };
 
-                for ( var j = 0; j < this.props.columns.length; j++ ) {
+                for ( var j = 0; j < cols.length; j++ ) {
                     cellClass = 'z-cell';
 
                     if ( j === 0 ) {
                         cellClass += ' z-first';
                     }
-                    if ( j === this.props.columns.length - 1 ) {
+                    if ( j === cols.length - 1 ) {
                         cellClass += ' z-last';
                     }
 
-                    cellWidth = this.props.columns[j].width ? {width: this.props.columns[j].width, minWidth: this.props.columns[j].width} : {minWidth: this.props.columns[j].minWidth, WebkitFlex: 1, msFlex: 1, flex: 1};
+                    cellWidth = cols[j].width ? assign({width: cols[j].width, minWidth: cols[j].width}, {width: cols[j].sizeStyle.width, minWidth:cols[j].sizeStyle.width})
+                                              : {minWidth: cols[j].minWidth, WebkitFlex: 1, msFlex: 1, flex: 1};
 
                     emptyCells.push(
                         <div key={j} className={cellClass} style={cellWidth} />
