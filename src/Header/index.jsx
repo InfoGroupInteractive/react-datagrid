@@ -11,6 +11,7 @@ var findIndexByName = require('../utils/findIndexByName')
 var Cell    = require('../Cell')
 var setupColumnDrag   = require('./setupColumnDrag')
 var setupColumnResize = require('./setupColumnResize')
+var sliceColumns = require('../render/sliceColumns');
 
 var normalize   = require('react-style-normalizer')
 
@@ -69,8 +70,9 @@ module.exports = React.createClass({
 
         var dragIndex = this.state.dragColumnIndex
         var dropIndex = this.state.dropIndex
+        var isDropDisabled = this.props.fixedColumnRendering && this.props.allColumns[dropIndex] && this.props.allColumns[dropIndex].fixed;
 
-        if (dropIndex != null){
+        if (dropIndex != null && !isDropDisabled) {
 
             //since we need the indexes in the array of all columns
             //not only in the array of the visible columns
@@ -113,9 +115,8 @@ module.exports = React.createClass({
 
     render: function() {
         var props = this.prepareProps(this.props)
-        var cols = props.virtualColumnRendering && props.endColIndex !== null ?
-                    props.columns.slice(props.startColIndex, props.endColIndex + 1) :
-                    props.columns
+        var cols = sliceColumns(props);
+
         var scrollLeft = props.virtualColumnRendering ?
                             (props.leftOffset || 0) :
                             props.scrollLeft;
@@ -432,7 +433,9 @@ module.exports = React.createClass({
             return
         }
 
-        setupColumnDrag(this, this.props, column, event)
+        var isDragDisabled = this.props.fixedColumnRendering && column.fixed;
+
+        !isDragDisabled && setupColumnDrag(this, this.props, column, event);
     },
 
     onResizeDragStart: function(config){

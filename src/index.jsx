@@ -27,6 +27,7 @@ var getGroupedRows = require('./render/getGroupedRows')
 var renderMenu     = require('./render/renderMenu')
 
 var preventDefault = require('./utils/preventDefault')
+var _ = require('lodash');
 
 var isArray = Array.isArray
 
@@ -90,6 +91,7 @@ module.exports = React.createClass({
         loading          : React.PropTypes.bool,
         virtualRendering : React.PropTypes.bool,
         virtualColumnRendering : React.PropTypes.bool,
+        fixedColumnRendering   : React.PropTypes.bool,
 
         //specify false if you don't want any column to be resizable
         resizableColumns : React.PropTypes.bool,
@@ -213,8 +215,8 @@ module.exports = React.createClass({
             var startOffset = scrollLeft;
 
             // get start column index
-            for (var i = 0; i < props.columns.length; i++){
-                startOffset -= props.columns[i].width;
+            for (var i = props.fixedColumns.length; i < props.columns.length; i++){
+                startOffset -= props.columns[i].width || props.columns[i].minWidth;
                 if (startOffset <= 0){
                     state.startColIndex = i;
                     break;
@@ -281,16 +283,11 @@ module.exports = React.createClass({
         var endOffset = props.totalColumnWidth - (props.style.width + state.scrollLeft);
 
         // get end column index
-        for (var i = props.columns.length - 1; i >= 0; i--){
-            if (!props.columns[i].width){
-                endColIndex = null;
+        for (var i = props.columns.length - 1; i >= props.fixedColumns.length; i--){
+            endOffset -= props.columns[i].width || props.columns[i].minWidth;
+            if (endOffset <= 0){
+                endColIndex = i;
                 break;
-            } else {
-                endOffset -= props.columns[i].width;
-                if (endOffset <= 0){
-                    endColIndex = i;
-                    break;
-                }
             }
         }
 
@@ -298,6 +295,10 @@ module.exports = React.createClass({
     },
 
     getLeftOffset: function(props, startColIndex, endColIndex) {
+        if (props.fixedColumns.length) {
+            return 0;
+        }
+
         var visibleColumnsWidth = 0,
             leftOffset = 0,
             counter;
@@ -313,6 +314,37 @@ module.exports = React.createClass({
         }
 
         return leftOffset;
+    },
+
+    adjustStartColumnWidth: function(props, state) {
+        if (!props.fixedColumns.length) {
+            return;
+        }
+
+        var visibleColumnsWidth = props.fixedColumnWidth;
+        var width = 0;
+        var counter;
+
+        if (props.columns.length === props.endColIndex + 1) {
+            for (counter = props.startColIndex + 1; counter <= props.endColIndex; counter++) {
+                visibleColumnsWidth += props.columns[counter].width || props.columns[counter].minWidth;
+            }
+
+            if (visibleColumnsWidth && props.style.width) {
+                width = props.style.width - visibleColumnsWidth;
+            }
+
+            width = width < 0 ? 0 : width;
+
+            if (width === 0) {
+                props.startColIndex += 1;
+            } else {
+                props.columns[props.startColIndex].sizeStyle = {
+                    width: width,
+                    minWidth: width
+                };
+            }
+        }
     },
 
     getRenderEndIndex: function(props, state){
@@ -455,7 +487,10 @@ module.exports = React.createClass({
             startColIndex: state.startColIndex,
             endColIndex: endColIndex,
             leftOffset: props.virtualColumnRendering ? this.getLeftOffset(props, state.startColIndex, endColIndex) : 0,
-            virtualColumnRendering: props.virtualColumnRendering
+            virtualColumnRendering: props.virtualColumnRendering,
+
+            fixedColumnRendering: props.fixedColumnRendering,
+            fixedColumns     : props.fixedColumns
         })
     },
 
@@ -685,10 +720,15 @@ module.exports = React.createClass({
             // onRowClick: this.handleRowClick,
             selected        : props.selected == null?
                 state.defaultSelected:
-                props.selected
+                props.selected,
+
+            fixedColumns    : props.fixedColumns
         }, props)
 
         wrapperProps.columns    = getVisibleColumns(props, state)
+
+        state.scrollLeft && this.adjustStartColumnWidth(wrapperProps, state);
+
         wrapperProps.tableProps = this.getTableProps(wrapperProps, state)
 
         return (props.WrapperFactory || WrapperFactory)(wrapperProps)
@@ -1134,11 +1174,16 @@ module.exports = React.createClass({
     ///
     ///////////////////////////////////////
     prepareColumns: function(props, state){
+        var fixedColumns = [];
+
         props.columns = props.columns.map(function(col, index){
             col = Column(col, props)
             col.index = index
+            props.fixedColumnRendering && col.fixed && fixedColumns.push(col);
             return col
         }, this)
+
+        props.fixedColumns = fixedColumns;
 
         this.prepareColumnSizes(props, state)
 
@@ -1168,15 +1213,18 @@ module.exports = React.createClass({
         var visibleColumns = getVisibleColumns(props, state)
         var totalWidth     = 0
         var flexCount      = 0
+        var fixedColumnWidth = 0;
 
         visibleColumns.forEach(function(column){
             column.minWidth = column.minWidth || props.columnMinWidth
 
             if (!column.flexible){
                 totalWidth += column.width
+                fixedColumnWidth += props.fixedColumnRendering && column.fixed ? column.width : 0;
                 return 0
             } else if (column.minWidth){
                 totalWidth += column.minWidth
+                fixedColumnWidth += props.fixedColumnRendering && column.fixed ? column.minWidth : 0;
             }
 
             flexCount++
@@ -1184,6 +1232,7 @@ module.exports = React.createClass({
 
         props.columnFlexCount  = flexCount
         props.totalColumnWidth = totalWidth
+        props.fixedColumnWidth = fixedColumnWidth;
     },
 
     prepareResizeProxy: function(props, state){
