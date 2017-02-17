@@ -4,7 +4,8 @@ var React    = require('react')
 var ReactDOM    = require('react-dom')
 var assign   = require('object-assign')
 var Scroller = require('react-virtual-scroller')
-var sliceColumns = require('../render/sliceColumns');
+
+function emptyFn(){}
 
 module.exports = React.createClass({
 
@@ -30,12 +31,20 @@ module.exports = React.createClass({
     },
 
     componentDidMount: function(){
+        /* YM360 IL-291: fill empty space with blank rows */
         this.setState({height: ReactDOM.findDOMNode(this).offsetHeight});
         window.addEventListener('resize', this._handleResize);
+        /** END YM360 */
     },
 
     componentWillUnmount: function(){
+        /* YM360 IL-291: fill empty space with blank rows */
         window.removeEventListener('resize', this._handleResize);
+        /** END YM360 */
+    },
+
+    onMount: function(scroller){
+        ;(this.props.onMount || emptyFn)(this, scroller)
     },
 
     render: function() {
@@ -68,7 +77,7 @@ module.exports = React.createClass({
         }
 
         return <Scroller
-                ref="scroller"
+                onMount={this.onMount}
                 preventDefaultHorizontal={true}
 
                 loadMask={!props.loadMaskOverHeader}
@@ -104,6 +113,7 @@ module.exports = React.createClass({
         this.props.onScrollTop(pos)
     },
 
+    /* YM360 IL-291: fill empty space with blank rows */
     fillEmptyRows: function(){
         var emptyPixels = 0;
         var numEmptyRows = 0;
@@ -111,7 +121,7 @@ module.exports = React.createClass({
         var emptyCells = [];
         var height = this.state.height !== 0 && this.state.height;
         var rowClass, cellClass, cellWidth, rowHeight, offset;
-        var cols = sliceColumns(this.props);
+        var cols = this.props.columns;
 
         if ( height > this.props.renderCount * this.props.rowHeight ) {
             emptyPixels = height - ((this.props.renderCount - 1) * this.props.rowHeight);
@@ -153,6 +163,7 @@ module.exports = React.createClass({
 
         return emptyRows;
     },
+    /* END YM360 */
 
     prepareProps: function(thisProps){
         var props = {}
@@ -162,13 +173,17 @@ module.exports = React.createClass({
         return props
     },
 
+    /* YM360 IL-291: fill empty space with blank rows */
     _handleResize: function() {
         this.setState({height: ReactDOM.findDOMNode(this).offsetHeight});
     },
+    /* END YM360 */
 
+    /* YM360 HAD-2495: deselect selected row */
     _onEmptyRowClick: function(e) {
         if (typeof this.props.onEmptyRowClick === 'function') {
             this.props.onEmptyRowClick(e);
         }
     }
+    /* END YM360 */
 })

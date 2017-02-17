@@ -2,10 +2,11 @@
 
 require('es6-promise').polyfill()
 
-var React    = require('react')
-var ReactDOM    = require('react-dom')
+import { findDOMNode } from 'react-dom'
+import React from 'react'
+
 var assign   = require('object-assign')
-var LoadMask = require('react-load-mask')
+import LoadMask from 'react-load-mask'
 var Region   = require('region')
 
 var PaginationToolbar = React.createFactory(require('./PaginationToolbar'))
@@ -90,8 +91,6 @@ module.exports = React.createClass({
     propTypes: {
         loading          : React.PropTypes.bool,
         virtualRendering : React.PropTypes.bool,
-        virtualColumnRendering : React.PropTypes.bool,
-        fixedColumnRendering   : React.PropTypes.bool,
 
         //specify false if you don't want any column to be resizable
         resizableColumns : React.PropTypes.bool,
@@ -131,46 +130,11 @@ module.exports = React.createClass({
 
     componentDidMount: function(){
         window.addEventListener('click', this.windowClickListener = this.onWindowClick)
-        // this.checkRowHeight(this.props)
-        this.checkWidth(this.props);
     },
 
     componentWillUnmount: function(){
+        this.scroller = null
         window.removeEventListener('click', this.windowClickListener)
-    },
-
-    // checkRowHeight: function(props) {
-    //     if (this.isVirtualRendering(props)){
-
-    //         //if virtual rendering and no rowHeight specifed, we use
-    //         var row = this.findRowById(SIZING_ID)
-    //         var config = {}
-
-    //         if (row){
-    //             this.setState({
-    //                 rowHeight: config.rowHeight = row.offsetHeight
-    //             })
-    //         }
-
-    //         //this ensures rows are kept in view
-    //         this.updateStartIndex(props, undefined, config)
-    //     }
-    // },
-
-    checkWidth: function(props){
-        if (!props.virtualColumnRendering){
-            return;
-        } else {
-            if (!props.style.width){
-                console.warn('Virtual column rendering requires grid width to be defined.', 'Make sure your style prop includes a width.');
-            }
-            for(var i = 0; i < props.columns.length; i++){
-                if (!props.columns[i].width){
-                    console.warn('Virtual column rendering requires a width to be defined for all columns.', props.columns[i]);
-                    break;
-                }
-            }
-        }
     },
 
     onWindowClick: function(event){
@@ -211,19 +175,6 @@ module.exports = React.createClass({
         state.scrollLeft = scrollLeft;
         state.menuColumn = null;
 
-        if (props.virtualColumnRendering){
-            var startOffset = scrollLeft;
-
-            // get start column index
-            for (var i = props.fixedColumns.length; i < props.columns.length; i++){
-                startOffset -= props.columns[i].width || props.columns[i].minWidth;
-                if (startOffset <= 0){
-                    state.startColIndex = i;
-                    break;
-                }
-            }
-        }
-
         this.setState(state);
     },
 
@@ -239,34 +190,11 @@ module.exports = React.createClass({
 
         if (props.virtualRendering){
 
-            var prevIndex        = this.state.startIndex || 0
+            var prevIndex = this.state.startIndex || 0
             var renderStartIndex = Math.ceil(scrollTop / props.rowHeight)
 
             state.startIndex = renderStartIndex
 
-            // var data = this.prepareData(props)
-
-            // if (renderStartIndex >= data.length){
-            //     renderStartIndex = 0
-            // }
-
-            // state.renderStartIndex = renderStartIndex
-
-            // var endIndex = this.getRenderEndIndex(props, state)
-
-            // if (endIndex > data.length){
-            //     renderStartIndex -= data.length - endIndex
-            //     renderStartIndex = Math.max(0, renderStartIndex)
-
-            //     state.renderStartIndex = renderStartIndex
-            // }
-
-            // // console.log('scroll!');
-            // var sign = signum(renderStartIndex - prevIndex)
-
-            // state.topOffset = -sign * Math.ceil(scrollTop - state.renderStartIndex * this.props.rowHeight)
-
-            // console.log(scrollTop, sign);
         } else {
             state.scrollTop = scrollTop
         }
@@ -274,47 +202,6 @@ module.exports = React.createClass({
         this.setState(state)
     },
 
-    getRenderEndColIndex: function(props, state){
-        if(!props.style.width){
-            return null;
-        }
-
-        var endColIndex
-        var endOffset = props.totalColumnWidth - (props.style.width + state.scrollLeft);
-
-        // get end column index
-        for (var i = props.columns.length - 1; i >= props.fixedColumns.length; i--){
-            endOffset -= props.columns[i].width || props.columns[i].minWidth;
-            if (endOffset <= 0){
-                endColIndex = i;
-                break;
-            }
-        }
-
-        return endColIndex;
-    },
-
-    getLeftOffset: function(props, startColIndex, endColIndex) {
-        if (props.fixedColumns.length) {
-            return 0;
-        }
-
-        var visibleColumnsWidth = 0,
-            leftOffset = 0,
-            counter;
-
-        if (endColIndex !== null && props.columns.length === endColIndex + 1) {
-            for (counter = startColIndex; counter <= endColIndex; counter++) {
-                visibleColumnsWidth += props.columns[counter].width;
-            }
-
-            if (visibleColumnsWidth && props.style.width) {
-                leftOffset = visibleColumnsWidth - props.style.width;
-            }
-        }
-
-        return leftOffset;
-    },
 
     adjustStartColumnWidth: function(props, state) {
         if (!props.fixedColumns.length) {
@@ -376,9 +263,9 @@ module.exports = React.createClass({
     },
 
     onDropColumn: function(index, dropIndex){
-        if (typeof this.props.onColumnOrderChange === 'function' && typeof this.props.onSelectedCellChange === 'function' && this.props.selectCells) {
-            this.props.onSelectedCellChange(null);
-        }
+        // if (typeof this.props.onColumnOrderChange === 'function' && typeof this.props.onSelectedCellChange === 'function' && this.props.selectCells) {
+        //     this.props.onSelectedCellChange(null);
+        // }
 
         ;(this.props.onColumnOrderChange || emptyFn)(index, dropIndex)
     },
@@ -450,7 +337,6 @@ module.exports = React.createClass({
 
         var allColumns = props.columns
         var columns    = getVisibleColumns(props, state)
-        var endColIndex = props.virtualColumnRendering ? this.getRenderEndColIndex(props, state) : null;
 
         return (props.headerFactory || HeaderFactory)({
             scrollLeft       : state.scrollLeft,
@@ -482,15 +368,13 @@ module.exports = React.createClass({
             filterMenuFactory : this.filterMenuFactory,
             menuColumn       : state.menuColumn,
             columnMenuFactory: props.columnMenuFactory,
-            selectCells      : props.selectCells,
-            onSelectedCellChange  : props.onSelectedCellChange,
-            startColIndex: state.startColIndex,
-            endColIndex: endColIndex,
-            leftOffset: props.virtualColumnRendering ? this.getLeftOffset(props, state.startColIndex, endColIndex) : 0,
-            virtualColumnRendering: props.virtualColumnRendering,
-
-            fixedColumnRendering: props.fixedColumnRendering,
-            fixedColumns     : props.fixedColumns
+            // selectCells      : props.selectCells,
+            // onSelectedCellChange  : props.onSelectedCellChange,
+            // startColIndex: state.startColIndex,
+            // endColIndex: endColIndex,
+            //
+            // fixedColumnRendering: props.fixedColumnRendering,
+            // fixedColumns     : props.fixedColumns
         })
     },
 
@@ -630,27 +514,25 @@ module.exports = React.createClass({
     },
 
     fixHorizontalScrollbar: function() {
-        var wrapper = this.refs.wrapper
+        var scroller = this.scroller
 
-        if (wrapper){
-            var scroller = wrapper.refs.scroller
-            scroller && scroller.fixHorizontalScrollbar()
+        if (scroller){
+            scroller.fixHorizontalScrollbar()
         }
+    },
+
+    onWrapperMount: function(wrapper, scroller){
+        this.scroller = scroller
     },
 
     prepareWrapper: function(props, state){
         var virtualRendering = props.virtualRendering
-        var virtualColumnRendering = props.virtualColumnRendering
-
         var data       = props.data
         var scrollTop  = state.scrollTop
         var startIndex = state.startIndex
         var endIndex   = virtualRendering?
                             this.getRenderEndIndex(props, state):
                             0
-
-        var startColIndex = state.startColIndex
-        var endColIndex = virtualColumnRendering ? this.getRenderEndColIndex(props, state): null
 
         var renderCount = virtualRendering?
                             endIndex + 1 - startIndex:
@@ -687,19 +569,15 @@ module.exports = React.createClass({
 
         var wrapperProps = assign({
             ref             : 'wrapper',
+            onMount         : this.onWrapperMount,
             scrollLeft      : state.scrollLeft,
             scrollTop       : scrollTop,
             topOffset       : state.topOffset,
             startIndex      : startIndex,
-            startColIndex   : startColIndex,
             totalLength     : totalLength,
             renderCount     : renderCount,
             endIndex        : endIndex,
-            endColIndex     : endColIndex,
-            leftOffset      : props.virtualColumnRendering ? this.getLeftOffset(props, startColIndex, endColIndex) : 0,
-
             allColumns      : props.columns,
-
             onScrollLeft    : this.handleScrollLeft,
             onScrollTop     : this.handleScrollTop,
             // onScrollOverflow: props.virtualPagination? this.handleVerticalScrollOverflow: null,
@@ -719,10 +597,7 @@ module.exports = React.createClass({
 
             // onRowClick: this.handleRowClick,
             selected        : props.selected == null?
-                state.defaultSelected:
-                props.selected,
-
-            fixedColumns    : props.fixedColumns
+            state.defaultSelected: props.selected
         }, props)
 
         wrapperProps.columns    = getVisibleColumns(props, state)
@@ -1179,7 +1054,7 @@ module.exports = React.createClass({
         props.columns = props.columns.map(function(col, index){
             col = Column(col, props)
             col.index = index
-            props.fixedColumnRendering && col.fixed && fixedColumns.push(col);
+            // props.fixedColumnRendering && col.fixed && fixedColumns.push(col);
             return col
         }, this)
 
@@ -1220,11 +1095,11 @@ module.exports = React.createClass({
 
             if (!column.flexible){
                 totalWidth += column.width
-                fixedColumnWidth += props.fixedColumnRendering && column.fixed ? column.width : 0;
+                // fixedColumnWidth += props.fixedColumnRendering && column.fixed ? column.width : 0;
                 return 0
             } else if (column.minWidth){
                 totalWidth += column.minWidth
-                fixedColumnWidth += props.fixedColumnRendering && column.fixed ? column.minWidth : 0;
+                // fixedColumnWidth += props.fixedColumnRendering && column.fixed ? column.minWidth : 0;
             }
 
             flexCount++
@@ -1232,7 +1107,7 @@ module.exports = React.createClass({
 
         props.columnFlexCount  = flexCount
         props.totalColumnWidth = totalWidth
-        props.fixedColumnWidth = fixedColumnWidth;
+        // props.fixedColumnWidth = fixedColumnWidth;
     },
 
     prepareResizeProxy: function(props, state){
@@ -1241,7 +1116,7 @@ module.exports = React.createClass({
 
     onColumnResizeDragStart: function(config){
 
-        var domNode = ReactDOM.findDOMNode(this)
+        var domNode = findDOMNode(this)
         var region  = Region.from(domNode)
 
         this.resizeProxyLeft = config.resizeProxyLeft - region.left
@@ -1268,7 +1143,7 @@ module.exports = React.createClass({
             setTimeout(function(){
                 //FF needs this, since it does not trigger scroll event when scrollbar dissapears
                 //so we might end up with grid content not visible (to the left)
-                var domNode = ReactDOM.findDOMNode(horizScrollbar)
+                var domNode = findDOMNode(horizScrollbar)
                 if (domNode && !domNode.scrollLeft){
                     this.handleScrollLeft(0)
                 }
