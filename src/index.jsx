@@ -178,7 +178,10 @@ module.exports = React.createClass({
         this.setState(state);
     },
 
-    handleScrollTop: function(scrollTop){
+    /* YM360 HAD-5387: Items Browser Optimization */
+    // handleScrollTop: function(scrollTop){
+    handleScrollTop: function(scrollTop, height){
+    /* End YM360 */
         var props = this.p
         var state = this.state
 
@@ -198,6 +201,10 @@ module.exports = React.createClass({
         } else {
             state.scrollTop = scrollTop
         }
+
+        /* YM360 HAD-5387: Items Browser Optimization */
+        props.onVerticalScroll(scrollTop, height)
+        /* End YM360 */
 
         this.setState(state)
     },
@@ -538,9 +545,14 @@ module.exports = React.createClass({
                             endIndex + 1 - startIndex:
                             data.length
 
-        var totalLength = state.groupData?
-                            data.length + state.groupData.groupsCount:
-                            data.length
+        /* YM360 HAD-5387: Items Browser Optimization */
+        // var totalLength = state.groupData?
+        //                     data.length + state.groupData.groupsCount:
+        //                     data.length
+        var numRows = props.totalRowCount || data.length;
+        var totalLength = state.groupData ? numRows + state.groupData.groupsCount : numRows;
+        /* End YM360 */
+
 
         if (props.virtualRendering){
             scrollTop = startIndex * props.rowHeight

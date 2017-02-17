@@ -62,7 +62,11 @@ module.exports = React.createClass({
         // var loadersSize = props.loadersSize
         var verticalScrollerSize = (props.totalLength + groupsCount) * props.rowHeight// + loadersSize
 
-        // determine to render empty text, empty rows or data
+        // var content = props.empty
+        //     ? <div className="z-empty-text" style={props.emptyTextStyle}>{props.emptyText}</div>
+        //     : <div {...props.tableProps} ref="table"/>
+
+        /* YM360 IL-291: fill empty space with blank rows */
         var content;
         if ( props.empty && props.fillEmptyRows ) {
             content = <div {...props.tableProps} ref="table">{this.fillEmptyRows()}</div>;
@@ -75,6 +79,7 @@ module.exports = React.createClass({
         } else {
             content = <div {...props.tableProps} ref="table"></div>;
         }
+        /* END YM360 */
 
         return <Scroller
                 onMount={this.onMount}
@@ -110,7 +115,10 @@ module.exports = React.createClass({
     },
 
     onVerticalScroll: function(pos){
-        this.props.onScrollTop(pos)
+        /* YM360 HAD-5387: Items Browser Optimization */
+        // this.props.onScrollTop(pos)
+        this.props.onScrollTop(pos, this.state.height);
+        /* End YM360 */
     },
 
     /* YM360 IL-291: fill empty space with blank rows */
