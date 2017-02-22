@@ -82,7 +82,7 @@ class App extends React.Component {
         /* Pagination Example */
         this.onScroll = this.onScroll.bind(this);
         this.getMoreData = this.getMoreData.bind(this);
-        this.state = {data: totalData.slice(0, pageSize-1)};
+        this.state = {data: totalData.slice(0, pageSize-1), maxStartIndex: 24};
         /* End Pagination Example */
     }
 
@@ -108,8 +108,9 @@ class App extends React.Component {
                             columns={columns}
                             onColumnResize={this.onColumnResize}
                             /* YM360 props */
-                            fillEmptyRows={true}
+                            fillEmptyRows={false}
                             onVerticalScroll={this.onScroll}
+                            maxStartIndex={this.state.maxStartIndex}
                             totalRowCount={LEN} />
                     </div>
                 </div>
@@ -119,25 +120,27 @@ class App extends React.Component {
     }
 
     /* Pagination Example */
-    onScroll(pos, height){
+    onScroll(startIndex, height){
         let visibleRowCount = Math.floor(height/ROW_HEIGHT)
-        let startIndex = Math.floor(pos/ROW_HEIGHT);
+        // let startIndex = Math.floor(pos/ROW_HEIGHT);
         let endIndex = startIndex + visibleRowCount;
         let pageIndex = Math.floor(endIndex/pageSize)
 
         if(this.state.data.length - endIndex <= pageSize/2) {
-            this.getMoreData(pageIndex);
+            setTimeout(() => this.getMoreData(pageIndex, visibleRowCount), 3000);
         }
     }
 
-    getMoreData(page){
+    getMoreData(page, visibleRowCount){
         let data = this.state && this.state.data && this.state.data.slice() || [];
         let pageNumber = page + 1;
         let pageStartIndex = pageNumber * pageSize;
         let pageEndIndex = pageStartIndex + pageSize - 1;
         data = data.concat(totalData.slice(pageStartIndex, pageEndIndex));
 
-        this.setState({data: data});
+        let maxStartIndex = (data.length - 1) - visibleRowCount;
+
+        this.setState({data: data, maxStartIndex: maxStartIndex});
     }
     /* End Pagination Example */
 

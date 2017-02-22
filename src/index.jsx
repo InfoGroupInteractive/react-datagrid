@@ -196,15 +196,22 @@ module.exports = React.createClass({
             var prevIndex = this.state.startIndex || 0
             var renderStartIndex = Math.ceil(scrollTop / props.rowHeight)
 
-            state.startIndex = renderStartIndex
+            /* YM360 HAD-5387: Items Browser Optimization */
+            // state.startIndex = renderStartIndex
+            if (typeof props.maxStartIndex === 'number'){
+                state.startIndex = props.maxStartIndex < renderStartIndex ? props.maxStartIndex : renderStartIndex;
+            } else {
+                state.startIndex = renderStartIndex;
+            }
+
+            if (typeof props.onVerticalScroll === 'function'){
+                props.onVerticalScroll(state.startIndex, height)
+            }
+            /* End YM360 */
 
         } else {
             state.scrollTop = scrollTop
         }
-
-        /* YM360 HAD-5387: Items Browser Optimization */
-        props.onVerticalScroll(scrollTop, height)
-        /* End YM360 */
 
         this.setState(state)
     },
