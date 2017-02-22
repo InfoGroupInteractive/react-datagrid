@@ -68,6 +68,7 @@ var sort = sorty(SORT_INFO)
 /* Pagination Example */
 var totalData = gen(LEN);
 var pageSize = 50;
+var requestedPages = [];
 /* End Pagination Example */
 
 
@@ -82,7 +83,7 @@ class App extends React.Component {
         /* Pagination Example */
         this.onScroll = this.onScroll.bind(this);
         this.getMoreData = this.getMoreData.bind(this);
-        this.state = {data: totalData.slice(0, pageSize-1), maxStartIndex: 24};
+        this.state = {data: totalData.slice(0, pageSize), maxStartIndex: 24};
         /* End Pagination Example */
     }
 
@@ -132,13 +133,18 @@ class App extends React.Component {
     }
 
     getMoreData(page, visibleRowCount){
+        if (requestedPages.indexOf(page) !== -1){
+            return false;
+        }
+
+        requestedPages.push(page);
         let data = this.state && this.state.data && this.state.data.slice() || [];
         let pageNumber = page + 1;
         let pageStartIndex = pageNumber * pageSize;
-        let pageEndIndex = pageStartIndex + pageSize - 1;
+        let pageEndIndex = pageStartIndex + pageSize;
         data = data.concat(totalData.slice(pageStartIndex, pageEndIndex));
 
-        let maxStartIndex = (data.length - 1) - visibleRowCount;
+        let maxStartIndex = data.length - (visibleRowCount - 1);
 
         this.setState({data: data, maxStartIndex: maxStartIndex});
     }
