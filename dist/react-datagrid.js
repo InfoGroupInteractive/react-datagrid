@@ -188,47 +188,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	    componentDidMount: function componentDidMount() {
 	        window.addEventListener('click', this.windowClickListener = this.onWindowClick);
-	        // this.checkRowHeight(this.props)
 	    },
 
 	    componentWillUnmount: function componentWillUnmount() {
 	        this.scroller = null;
 	        window.removeEventListener('click', this.windowClickListener);
 	    },
-
-	    // checkRowHeight: function(props) {
-	    //     if (this.isVirtualRendering(props)){
-
-	    //         //if virtual rendering and no rowHeight specifed, we use
-	    //         var row = this.findRowById(SIZING_ID)
-	    //         var config = {}
-
-	    //         if (row){
-	    //             this.setState({
-	    //                 rowHeight: config.rowHeight = row.offsetHeight
-	    //             })
-	    //         }
-
-	    //         //this ensures rows are kept in view
-	    //         this.updateStartIndex(props, undefined, config)
-	    //     }
-	    // },
-
-	    // checkWidth: function(props){
-	    //     if (!props.virtualColumnRendering){
-	    //         return;
-	    //     } else {
-	    //         if (!props.style.width){
-	    //             console.warn('Virtual column rendering requires grid width to be defined.', 'Make sure your style prop includes a width.');
-	    //         }
-	    //         for(var i = 0; i < props.columns.length; i++){
-	    //             if (!props.columns[i].width){
-	    //                 console.warn('Virtual column rendering requires a width to be defined for all columns.', props.columns[i]);
-	    //                 break;
-	    //             }
-	    //         }
-	    //     }
-	    // },
 
 	    onWindowClick: function onWindowClick(event) {
 	        if (this.state.menu) {
@@ -268,23 +233,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	        state.scrollLeft = scrollLeft;
 	        state.menuColumn = null;
 
-	        // if (props.virtualColumnRendering){
-	        //     var startOffset = scrollLeft;
-	        //
-	        //     // get start column index
-	        //     for (var i = props.fixedColumns.length; i < props.columns.length; i++){
-	        //         startOffset -= props.columns[i].width || props.columns[i].minWidth;
-	        //         if (startOffset <= 0){
-	        //             state.startColIndex = i;
-	        //             break;
-	        //         }
-	        //     }
-	        // }
-
 	        this.setState(state);
 	    },
 
-	    handleScrollTop: function handleScrollTop(scrollTop) {
+	    /* YM360 HAD-5387: Items Browser Optimization */
+	    // handleScrollTop: function(scrollTop){
+	    handleScrollTop: function handleScrollTop(scrollTop, height) {
+	        /* End YM360 */
 	        var props = this.p;
 	        var state = this.state;
 
@@ -299,78 +254,23 @@ return /******/ (function(modules) { // webpackBootstrap
 	            var prevIndex = this.state.startIndex || 0;
 	            var renderStartIndex = Math.ceil(scrollTop / props.rowHeight);
 
-	            state.startIndex = renderStartIndex;
+	            /* YM360 HAD-5387: Items Browser Optimization */
+	            // state.startIndex = renderStartIndex
+	            if (typeof props.maxStartIndex === 'number') {
+	                state.startIndex = props.maxStartIndex < renderStartIndex ? props.maxStartIndex : renderStartIndex;
+	            } else {
+	                state.startIndex = renderStartIndex;
+	            }
 
-	            // var data = this.prepareData(props)
-
-	            // if (renderStartIndex >= data.length){
-	            //     renderStartIndex = 0
-	            // }
-
-	            // state.renderStartIndex = renderStartIndex
-
-	            // var endIndex = this.getRenderEndIndex(props, state)
-
-	            // if (endIndex > data.length){
-	            //     renderStartIndex -= data.length - endIndex
-	            //     renderStartIndex = Math.max(0, renderStartIndex)
-
-	            //     state.renderStartIndex = renderStartIndex
-	            // }
-
-	            // // console.log('scroll!');
-	            // var sign = signum(renderStartIndex - prevIndex)
-
-	            // state.topOffset = -sign * Math.ceil(scrollTop - state.renderStartIndex * this.props.rowHeight)
-
-	            // console.log(scrollTop, sign);
+	            if (typeof props.onVerticalScroll === 'function') {
+	                props.onVerticalScroll(state.startIndex, height);
+	            }
+	            /* End YM360 */
 	        } else {
 	            state.scrollTop = scrollTop;
 	        }
 
 	        this.setState(state);
-	    },
-
-	    getRenderEndColIndex: function getRenderEndColIndex(props, state) {
-	        if (!props.style.width) {
-	            return null;
-	        }
-
-	        var endColIndex;
-	        var endOffset = props.totalColumnWidth - (props.style.width + state.scrollLeft);
-
-	        // get end column index
-	        for (var i = props.columns.length - 1; i >= props.fixedColumns.length; i--) {
-	            endOffset -= props.columns[i].width || props.columns[i].minWidth;
-	            if (endOffset <= 0) {
-	                endColIndex = i;
-	                break;
-	            }
-	        }
-
-	        return endColIndex;
-	    },
-
-	    getLeftOffset: function getLeftOffset(props, startColIndex, endColIndex) {
-	        if (props.fixedColumns.length) {
-	            return 0;
-	        }
-
-	        var visibleColumnsWidth = 0,
-	            leftOffset = 0,
-	            counter;
-
-	        if (endColIndex !== null && props.columns.length === endColIndex + 1) {
-	            for (counter = startColIndex; counter <= endColIndex; counter++) {
-	                visibleColumnsWidth += props.columns[counter].width;
-	            }
-
-	            if (visibleColumnsWidth && props.style.width) {
-	                leftOffset = visibleColumnsWidth - props.style.width;
-	            }
-	        }
-
-	        return leftOffset;
 	    },
 
 	    adjustStartColumnWidth: function adjustStartColumnWidth(props, state) {
@@ -505,7 +405,6 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	        var allColumns = props.columns;
 	        var columns = getVisibleColumns(props, state);
-	        // var endColIndex = props.virtualColumnRendering ? this.getRenderEndColIndex(props, state) : null;
 
 	        return (props.headerFactory || HeaderFactory)({
 	            scrollLeft: state.scrollLeft,
@@ -687,19 +586,20 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	    prepareWrapper: function prepareWrapper(props, state) {
 	        var virtualRendering = props.virtualRendering;
-	        // var virtualColumnRendering = props.virtualColumnRendering
-
 	        var data = props.data;
 	        var scrollTop = state.scrollTop;
 	        var startIndex = state.startIndex;
 	        var endIndex = virtualRendering ? this.getRenderEndIndex(props, state) : 0;
 
-	        // var startColIndex = state.startColIndex
-	        // var endColIndex = virtualColumnRendering ? this.getRenderEndColIndex(props, state): null
-
 	        var renderCount = virtualRendering ? endIndex + 1 - startIndex : data.length;
 
-	        var totalLength = state.groupData ? data.length + state.groupData.groupsCount : data.length;
+	        /* YM360 HAD-5387: Items Browser Optimization */
+	        // var totalLength = state.groupData?
+	        //                     data.length + state.groupData.groupsCount:
+	        //                     data.length
+	        var numRows = props.totalRowCount || data.length;
+	        var totalLength = state.groupData ? numRows + state.groupData.groupsCount : numRows;
+	        /* End YM360 */
 
 	        if (props.virtualRendering) {
 	            scrollTop = startIndex * props.rowHeight;
@@ -736,10 +636,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            totalLength: totalLength,
 	            renderCount: renderCount,
 	            endIndex: endIndex,
-	            // leftOffset      : props.virtualColumnRendering ? this.getLeftOffset(props, startColIndex, endColIndex) : 0,
-
 	            allColumns: props.columns,
-
 	            onScrollLeft: this.handleScrollLeft,
 	            onScrollTop: this.handleScrollTop,
 	            // onScrollOverflow: props.virtualPagination? this.handleVerticalScrollOverflow: null,
@@ -758,9 +655,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            // loadersSize: loadersSize,
 
 	            // onRowClick: this.handleRowClick,
-	            selected: props.selected == null ? state.defaultSelected : props.selected,
-
-	            fixedColumns: props.fixedColumns
+	            selected: props.selected == null ? state.defaultSelected : props.selected
 	        }, props);
 
 	        wrapperProps.columns = getVisibleColumns(props, state);
@@ -28655,12 +28550,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	    },
 
 	    componentDidMount: function componentDidMount() {
+	        /* YM360 IL-291: fill empty space with blank rows */
 	        this.setState({ height: ReactDOM.findDOMNode(this).offsetHeight });
 	        window.addEventListener('resize', this._handleResize);
+	        /** END YM360 */
 	    },
 
 	    componentWillUnmount: function componentWillUnmount() {
+	        /* YM360 IL-291: fill empty space with blank rows */
 	        window.removeEventListener('resize', this._handleResize);
+	        /** END YM360 */
 	    },
 
 	    onMount: function onMount(scroller) {
@@ -28682,7 +28581,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	        // var loadersSize = props.loadersSize
 	        var verticalScrollerSize = (props.totalLength + groupsCount) * props.rowHeight; // + loadersSize
 
-	        // determine to render empty text, empty rows or data
+	        // var content = props.empty
+	        //     ? <div className="z-empty-text" style={props.emptyTextStyle}>{props.emptyText}</div>
+	        //     : <div {...props.tableProps} ref="table"/>
+
+	        /* YM360 IL-291: fill empty space with blank rows */
 	        var content;
 	        if (props.empty && props.fillEmptyRows) {
 	            content = React.createElement(
@@ -28701,6 +28604,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        } else {
 	            content = React.createElement('div', _extends({}, props.tableProps, { ref: 'table' }));
 	        }
+	        /* END YM360 */
 
 	        return React.createElement(
 	            Scroller,
@@ -28736,9 +28640,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	    },
 
 	    onVerticalScroll: function onVerticalScroll(pos) {
-	        this.props.onScrollTop(pos);
+	        /* YM360 HAD-5387: Items Browser Optimization */
+	        // this.props.onScrollTop(pos)
+	        this.props.onScrollTop(pos, this.state.height);
+	        /* End YM360 */
 	    },
 
+	    /* YM360 IL-291: fill empty space with blank rows */
 	    fillEmptyRows: function fillEmptyRows() {
 	        var emptyPixels = 0;
 	        var numEmptyRows = 0;
@@ -28785,6 +28693,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	        return emptyRows;
 	    },
+	    /* END YM360 */
 
 	    prepareProps: function prepareProps(thisProps) {
 	        var props = {};
@@ -28794,15 +28703,19 @@ return /******/ (function(modules) { // webpackBootstrap
 	        return props;
 	    },
 
+	    /* YM360 IL-291: fill empty space with blank rows */
 	    _handleResize: function _handleResize() {
 	        this.setState({ height: ReactDOM.findDOMNode(this).offsetHeight });
 	    },
+	    /* END YM360 */
 
+	    /* YM360 HAD-2495: deselect selected row */
 	    _onEmptyRowClick: function _onEmptyRowClick(e) {
 	        if (typeof this.props.onEmptyRowClick === 'function') {
 	            this.props.onEmptyRowClick(e);
 	        }
 	    }
+	    /* END YM360 */
 	});
 
 /***/ },
@@ -29054,6 +28967,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	          var diff = config.diff[side];
 
 	          newScrollPos = scroll[side] - diff;
+	          console.log(newScrollPos);
 
 	          if (side == 'top') {
 	            this.verticalScrollAt(newScrollPos, event);
@@ -29363,6 +29277,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	exports['default'] = Scroller;
 	module.exports = exports['default'];
+
 	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
 
 /***/ },
