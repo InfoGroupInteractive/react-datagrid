@@ -3,6 +3,7 @@
 var Region     = require('region')
 var ReactDOM   = require('react-dom')
 var DragHelper = require('drag-helper')
+var findDOMNode = require('react-dom').findDOMNode
 
 function range(start, end){
     var res = []
@@ -32,7 +33,7 @@ module.exports = function(header, props, column, event){
 
     event.preventDefault()
 
-    var headerNode   = ReactDOM.findDOMNode(header)
+    var headerNode   = findDOMNode(header)
     var headerRegion = Region.from(headerNode)
     var dragColumn = column
     var dragColumnIndex
