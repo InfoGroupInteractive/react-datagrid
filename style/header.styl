@@ -5,7 +5,8 @@
         top 0px
 
         .menu-row
-            @extend .z-unselectable
+            touch-callout none
+            user-select none
 
         //     &:before
         //         visibility hidden
@@ -115,9 +116,11 @@
             height 100%
 
 
-        .z-text
+        .z-content
             cursor $datagrid-header-cursor
-            @extend .u-ellipsis
+            text-overflow ellipsis
+            white-space nowrap
+            overflow hidden
 
         &.z-sortable
             .z-inner

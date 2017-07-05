@@ -1,36 +1,27 @@
-@import '~react-load-mask/style/index.styl'
+@import '~react-load-mask/index.css'
 @import '~css-utils/index.styl'
 @import '~react-virtual-scroller/index.styl'
 @import './constants.styl'
 
 .z-unselectable
-    touch-callout none
-    user-select none
+  touch-callout none
+  user-select none
 
 .react-datagrid
-    &
-    & *
-        box-sizing border-box
+  &
+  & *
+    box-sizing border-box
 
 datagrid-cell()
     display flex
-    white-space nowrap
-    overflow hidden
+    align-items center
     cursor $datagrid-cell-cursor
-    position relative
 
-    .z-inner
-        display flex
-        align-items center
-        size 100%
-        position absolute
-        margin auto 0
-        overflow hidden
-
-    .z-text
+    .z-content
         white-space nowrap
         overflow hidden
         text-overflow ellipsis
+        padding 0px $datagrid-cell-padding
 
 @import './resize.styl'
 
@@ -45,7 +36,7 @@ datagrid-cell()
     .z-header-menu-column
         z-index 100
 
-    @extend .u-flex-column
+    flex-flow column
     align-items stretch
 
     & > .z-inner
@@ -95,7 +86,7 @@ datagrid-cell()
         display flex
 
     .z-table-wrapper
-        @extend .u-flex-column
+        flex-flow column
         justify-content center
         align-items center
 

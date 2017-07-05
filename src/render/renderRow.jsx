@@ -40,8 +40,7 @@ module.exports = function renderRow(props, data, index, fn){
         selected = selectedKey === props.selected
     }
 
-    var config = {
-        className: index % 2 === 0? 'z-even': 'z-odd',
+    var config = assign({}, props.rowProps, {
         selected : selected,
 
         key      : renderKey,
@@ -53,23 +52,13 @@ module.exports = function renderRow(props, data, index, fn){
         renderText : props.renderText,
         cellPadding: props.cellPadding,
         rowHeight  : props.rowHeight,
-        minWidth   : props.minRowWidth,
+        minWidth   : props.minRowWidth - props.scrollbarSize,
         columns    : props.columns,
 
         rowContextMenu: props.rowContextMenu,
         showMenu: props.showMenu,
-
-        _onClick: this? this.handleRowClick: null,
-        onSelectedCellChange: props.onSelectedCellChange,
-        selectedCells: props.selectedCells,
-        selectCells: props.selectCells,
-        startColIndex: props.startColIndex,
-        endColIndex: props.endColIndex,
-        scrollLeft:props.scrollLeft,
-        virtualColumnRendering: props.virtualColumnRendering,
-
-        fixedColumns: props.fixedColumns
-    }
+        _onClick: this? this.handleRowClick: null
+    })
 
     var style
     var rowStyle = props.rowStyle

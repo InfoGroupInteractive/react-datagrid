@@ -19,101 +19,127 @@ function copyProps(target, source, list){
 
 }
 
-module.exports = React.createClass({
+var PropTypes = React.PropTypes
+
+var Cell = React.createClass({
 
     displayName: 'ReactDataGrid.Cell',
 
     propTypes: {
-        className  : React.PropTypes.string,
-        textPadding: React.PropTypes.oneOfType([
-            React.PropTypes.number,
-            React.PropTypes.string
+        className     : PropTypes.string,
+        firstClassName: PropTypes.string,
+        lastClassName : PropTypes.string,
+
+        contentPadding: PropTypes.oneOfType([
+            PropTypes.number,
+            PropTypes.string
         ]),
-        style      : React.PropTypes.object,
-        text       : React.PropTypes.any,
-        rowIndex   : React.PropTypes.number
+
+        column : PropTypes.object,
+        columns: PropTypes.array,
+        index  : PropTypes.number,
+
+        style      : PropTypes.object,
+        text       : PropTypes.any,
+        rowIndex   : PropTypes.number
     },
 
     getDefaultProps: function(){
         return {
             text: '',
-            defaultClassName: 'z-cell'
+
+            firstClassName: 'z-first',
+            lastClassName : 'z-last',
+
+            defaultStyle: {}
         }
     },
 
-    render: function(){
-        var props     = this.props
-
-        var columns   = props.columns
+    prepareClassName: function(props) {
         var index     = props.index
-        var column    = columns? columns[index]: null
+        var columns   = props.columns
+        var column    = props.column
+
+        var textAlign = column && column.textAlign
+
         var className = props.className || ''
-        var textAlign = column && column.textAlign;
-        var textPadding = typeof props.rowIndex !== 'undefined' && column.cellPadding || props.textPadding;
-        var text      = props.renderText?
-            props.renderText(props.text, column, props.rowIndex):
-            props.text
 
-        var textCellProps = {
-            className: 'z-text',
-            style    : {padding: textPadding, margin: 'auto 0'}
-        }
+        className += ' ' + Cell.className
 
-        var textCell = props.renderCell?
-            props.renderCell(textCellProps, text, props):
-            React.DOM.div(textCellProps, text)
+        if (columns){
+            if (!index && props.firstClassName){
+                className += ' ' + props.firstClassName
+            }
 
-        if (!index){
-            className += ' z-first'
-        }
-        if (columns && index == columns.length - 1){
-            className += ' z-last'
+            if (index == columns.length - 1 && props.lastClassName){
+                className += ' ' + props.lastClassName
+            }
         }
 
         if (textAlign){
             className += ' z-align-' + textAlign
         }
 
-        if (props.selectedCells && Array.isArray(props.selectedCells) && props.selectedCells.length){
-            for (var i = 0; i < props.selectedCells.length; i++){
-                if (props.selectedCells[i].columnIndex === props.index && props.selectedCells[i].rowIndex === props.rowIndex) {
-                    className += ' z-cell-selected';
-                }
+        return className
+    },
+
+    prepareStyle: function(props) {
+        var column    = props.column
+        var sizeStyle = column && column.sizeStyle
+
+        var alignStyle
+        var textAlign = (column && column.textAlign) || (props.style || {}).textAlign
+
+        if (textAlign){
+            alignStyle = { justifyContent: TEXT_ALIGN_2_JUSTIFY[textAlign] }
+        }
+
+        var style = assign({}, props.defaultStyle, sizeStyle, alignStyle, props.style)
+
+        return normalize(style)
+    },
+
+    prepareProps: function(thisProps){
+
+        var props = assign({}, thisProps)
+
+        if (!props.column && props.columns){
+            props.column  = props.columns[props.index]
+        }
+
+        props.className = this.prepareClassName(props)
+        props.style     = this.prepareStyle(props)
+
+        return props
+    },
+
+    render: function(){
+        var props = this.p = this.prepareProps(this.props)
+
+        var column    = props.column
+        var textAlign = column && column.textAlign
+        var text      = props.renderText?
+            props.renderText(props.text, column, props.rowIndex):
+            props.text
+
+        var contentProps = {
+            className: 'z-content',
+            style    : {
+                padding: props.contentPadding
             }
         }
 
-        className += ' ' + props.defaultClassName
+        var content = props.renderCell?
+                            props.renderCell(contentProps, text, props):
+                            React.DOM.div(contentProps, text)
 
-        var sizeStyle = column && column.sizeStyle
-        var cellProps = {
-            className: className,
-            style    : normalize(assign({}, props.style, sizeStyle))
-        }
+        var renderProps = assign({}, props)
 
-        copyProps(cellProps, props, [
-            'onMouseOver',
-            'onMouseOut',
-            'onClick',
-            'onMouseDown',
-            'onMouseUp'
-        ])
+        delete renderProps.data
 
-        var innerStyle = props.innerStyle
-
-        if (textAlign){
-            innerStyle = assign({}, innerStyle, {
-                justifyContent: column.style.justifyContent || TEXT_ALIGN_2_JUSTIFY[column.textAlign]
-            })
-        }
-
-        var c = <div className='z-inner' style={innerStyle}>
-            {textCell}
-        </div>
-
-        // var c = {textCell}
         return (
-            <div {...cellProps} onClick={this.handleCellClick}>
-                {c}
+            <div {...renderProps}>
+                {content}
                 {props.children}
             </div>
         )
@@ -132,3 +158,7 @@ module.exports = React.createClass({
         }
     }
 })
+
+Cell.className = 'z-cell'
+
+module.exports = Cell
