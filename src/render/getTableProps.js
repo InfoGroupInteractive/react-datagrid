@@ -1,7 +1,6 @@
 'use strict';
 
 var React = require('react')
-var renderMenu = require('./renderMenu')
 var renderRow  = require('./renderRow')
 var tableStyle  = require('./tableStyle')
 var slice  = require('./slice')

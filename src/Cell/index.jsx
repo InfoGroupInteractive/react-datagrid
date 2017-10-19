@@ -1,6 +1,8 @@
 'use strict';
 
 var React  = require('react')
+var PropTypes = require('prop-types');
+var createReactClass = require('create-react-class');
 var assign = require('object-assign')
 var normalize = require('react-style-normalizer')
 
@@ -19,9 +21,9 @@ function copyProps(target, source, list){
 
 }
 
-var PropTypes = React.PropTypes
+var PropTypes = PropTypes
 
-var Cell = React.createClass({
+var Cell = createReactClass({
 
     displayName: 'ReactDataGrid.Cell',
 
@@ -131,7 +133,7 @@ var Cell = React.createClass({
 
         var content = props.renderCell?
                             props.renderCell(contentProps, text, props):
-                            React.DOM.div(contentProps, text)
+                            React.createElement('div', contentProps, text)
 
         var renderProps = assign({}, props)
 

@@ -1,21 +1,23 @@
 'use strict';
 
 var React       = require('react')
+var PropTypes   = require('prop-types');
+var createReactClass = require('create-react-class');
 var Region      = require('region')
 var assign      = require('object-assign')
 var normalize = require('react-style-normalizer')
 var Cell        = require('../Cell')
 var CellFactory = React.createFactory(Cell)
-var ReactMenu = require('react-menus')
-var ReactMenuFactory = React.createFactory(ReactMenu)
+// var ReactMenu = require('react-menus')
+// var ReactMenuFactory = React.createFactory(ReactMenu)
 
-module.exports = React.createClass({
+module.exports = createReactClass({
   displayName: 'ReactDataGrid.Row',
 
   propTypes: {
-    data   : React.PropTypes.object,
-    columns: React.PropTypes.array,
-    index  : React.PropTypes.number
+    data   : PropTypes.object,
+    columns: PropTypes.array,
+    index  : PropTypes.number
   },
 
   getDefaultProps: function(){
@@ -47,7 +49,7 @@ module.exports = React.createClass({
 
     props.onMouseEnter = this.handleMouseEnter
     props.onMouseLeave = this.handleMouseLeave
-    props.onContextMenu = this.handleContextMenu
+    // props.onContextMenu = this.handleContextMenu
     props.onClick = this.handleRowClick
 
     delete props.data
@@ -67,53 +69,53 @@ module.exports = React.createClass({
     }
   },
 
-  handleContextMenu: function(event){
+  // handleContextMenu: function(event){
 
-    if (this.props.rowContextMenu){
-      this.showMenu(event)
-    }
+  //   if (this.props.rowContextMenu){
+  //     this.showMenu(event)
+  //   }
 
-    if (this.props.onContextMenu){
-      this.props.onContextMenu(event)
-    }
-  },
+  //   if (this.props.onContextMenu){
+  //     this.props.onContextMenu(event)
+  //   }
+  // },
 
-  showMenu: function(event){
-    var factory = this.props.rowContextMenu
-    var alignTo = Region.from(event)
+  // showMenu: function(event){
+  //   var factory = this.props.rowContextMenu
+  //   var alignTo = Region.from(event)
 
-    var props = {
-        style: {
-            position: 'absolute'
-        },
-        rowProps: this.props,
-        data    : this.props.data,
-        alignTo : alignTo,
-        alignPositions: [
-            'tl-bl',
-            'tr-br',
-            'bl-tl',
-            'br-tr'
-        ],
-        items: [
-            {
-                label: 'stop'
-            }
-        ]
-    }
+  //   var props = {
+  //       style: {
+  //           position: 'absolute'
+  //       },
+  //       rowProps: this.props,
+  //       data    : this.props.data,
+  //       alignTo : alignTo,
+  //       alignPositions: [
+  //           'tl-bl',
+  //           'tr-br',
+  //           'bl-tl',
+  //           'br-tr'
+  //       ],
+  //       items: [
+  //           {
+  //               label: 'stop'
+  //           }
+  //       ]
+  //   }
 
-    var menu = factory(props)
+  //   var menu = factory(props)
 
-    if (menu === undefined){
-        menu = ReactMenuFactory(props)
-    }
+  //   if (menu === undefined){
+  //       menu = ReactMenuFactory(props)
+  //   }
 
-    event.preventDefault()
+  //   event.preventDefault()
 
-    this.props.showMenu(function(){
-        return menu
-    })
-  },
+  //   this.props.showMenu(function(){
+  //       return menu
+  //   })
+  // },
 
   handleMouseLeave: function(event){
     this.setState({

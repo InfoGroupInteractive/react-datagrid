@@ -4,15 +4,15 @@ require('es6-promise').polyfill()
 
 import { findDOMNode } from 'react-dom'
 import React from 'react'
+var PropTypes = require('prop-types');
+var createReactClass = require('create-react-class');
 
 var assign   = require('object-assign')
 import LoadMask from 'react-load-mask'
 var Region   = require('region')
-
-var PaginationToolbar = React.createFactory(require('./PaginationToolbar'))
 var Column = require('./models/Column')
 
-var PropTypes      = require('./PropTypes')
+var CustomPropTypes = require('./PropTypes')
 var Wrapper        = require('./Wrapper')
 var Header         = require('./Header')
 var WrapperFactory = React.createFactory(Wrapper)
@@ -25,7 +25,6 @@ var group           = require('./utils/group')
 var slice          = require('./render/slice')
 var getTableProps    = require('./render/getTableProps')
 var getGroupedRows = require('./render/getGroupedRows')
-var renderMenu     = require('./render/renderMenu')
 
 var preventDefault = require('./utils/preventDefault')
 var _ = require('lodash');
@@ -79,44 +78,43 @@ function findColumn(columns, column){
     }
 }
 
-module.exports = React.createClass({
+module.exports = createReactClass({
 
     displayName: 'ReactDataGrid',
 
     mixins: [
-        require('./RowSelect'),
-        require('./ColumnFilter')
+        require('./RowSelect')
     ],
 
     propTypes: {
-        loading          : React.PropTypes.bool,
-        virtualRendering : React.PropTypes.bool,
+        loading          : PropTypes.bool,
+        virtualRendering : PropTypes.bool,
 
         //specify false if you don't want any column to be resizable
-        resizableColumns : React.PropTypes.bool,
-        filterable: React.PropTypes.bool,
+        resizableColumns : PropTypes.bool,
+        filterable: PropTypes.bool,
 
         //specify false if you don't want column menus to be displayed
-        withColumnMenu   : React.PropTypes.bool,
-        cellEllipsis     : React.PropTypes.bool,
-        sortable         : React.PropTypes.bool,
-        loadMaskOverHeader : React.PropTypes.bool,
-        idProperty       : React.PropTypes.string.isRequired,
+        withColumnMenu   : PropTypes.bool,
+        cellEllipsis     : PropTypes.bool,
+        sortable         : PropTypes.bool,
+        loadMaskOverHeader : PropTypes.bool,
+        idProperty       : PropTypes.string.isRequired,
 
         //you can customize the column menu by specifying a factory
-        columnMenuFactory: React.PropTypes.func,
-        onDataSourceResponse: React.PropTypes.func,
-        onDataSourceSuccess: React.PropTypes.func,
-        onDataSourceError: React.PropTypes.func,
+        columnMenuFactory: PropTypes.func,
+        onDataSourceResponse: PropTypes.func,
+        onDataSourceSuccess: PropTypes.func,
+        onDataSourceError: PropTypes.func,
 
         /**
          * @cfg {Number/String} columnMinWidth=50
          */
-        columnMinWidth   : PropTypes.numeric,
-        scrollBy         : PropTypes.numeric,
-        rowHeight        : PropTypes.numeric,
-        sortInfo         : PropTypes.sortInfo,
-        columns          : PropTypes.column,
+        columnMinWidth   : CustomPropTypes.numeric,
+        scrollBy         : CustomPropTypes.numeric,
+        rowHeight        : CustomPropTypes.numeric,
+        sortInfo         : CustomPropTypes.sortInfo,
+        columns          : CustomPropTypes.column,
 
         data: function(props, name){
             var value = props[name]
@@ -379,7 +377,7 @@ module.exports = React.createClass({
 
             toggleColumn     : this.toggleColumn.bind(this, props),
             showMenu         : this.showMenu,
-            filterMenuFactory : this.filterMenuFactory,
+            // filterMenuFactory : this.filterMenuFactory,
             menuColumn       : state.menuColumn,
             columnMenuFactory: props.columnMenuFactory,
             // selectCells      : props.selectCells,
@@ -393,9 +391,10 @@ module.exports = React.createClass({
     },
 
     prepareFooter: function(props, state){
-        return (props.footerFactory || React.DOM.div)({
-            className: 'z-footer-wrapper'
-        })
+        // return (props.footerFactory || React.DOM.div)({
+        //     className: 'z-footer-wrapper'
+        // })
+        return <div className='z-footer-wrapper'></div>
     },
 
     prepareRenderProps: function(props){
@@ -437,66 +436,14 @@ module.exports = React.createClass({
             menu   : this.state.menu
         }
 
-        /* Commenting out unused loader to prevent react warnings. */
-        // var loadMask
-
-        // if (props.loadMaskOverHeader){
-        //     loadMask = <LoadMask visible={props.loading} />
-        // }
-
-        var paginationToolbar
-
-        if (props.pagination){
-            var page    = props.page
-            var minPage = props.minPage
-            var maxPage = props.maxPage
-
-            var paginationToolbarFactory = props.paginationFactory || PaginationToolbar
-            var paginationProps = assign({
-                dataSourceCount : props.dataSourceCount,
-                page            : page,
-                pageSize        : props.pageSize,
-                minPage         : minPage,
-                maxPage         : maxPage,
-                reload          : this.reload,
-                onPageChange    : this.gotoPage,
-                onPageSizeChange: this.setPageSize,
-                border          : props.style.border
-            }, props.paginationToolbarProps)
-
-            paginationToolbar = paginationToolbarFactory(paginationProps)
-
-            if (paginationToolbar === undefined){
-                paginationToolbar = PaginationToolbar(paginationProps)
-            }
-        }
-
-        var topToolbar
-        var bottomToolbar
-
-        if (paginationToolbar){
-            if (paginationToolbar.props.position == 'top'){
-                topToolbar = paginationToolbar
-            } else {
-                bottomToolbar = paginationToolbar
-            }
-        }
-
         var result = (
             <div {...renderProps}>
-                {topToolbar}
                 <div className="z-inner">
                     {header}
                     {wrapper}
                     {footer}
                     {resizeProxy}
                 </div>
-
-                {/* Commenting out unused loader to prevent react warnings.
-                    loadMask
-                */}
-                {renderMenu(menuProps)}
-                {bottomToolbar}
             </div>
         )
 
