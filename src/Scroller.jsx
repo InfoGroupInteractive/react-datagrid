@@ -279,14 +279,11 @@ class Scroller extends Component {
   }
 
   fixHorizontalScrollbar() {
-
-    const thisNode = findDOMNode(this)
-
-    if (!thisNode){
+    if (!this.refs.horizontalScroller){
       return
     }
 
-    this.horizontalScrollerNode = this.horizontalScrollerNode || thisNode.querySelector('.z-horizontal-scroller')
+    this.horizontalScrollerNode = this.horizontalScrollerNode || this.refs.horizontalScroller
 
     const dom = this.horizontalScrollerNode
 
@@ -341,7 +338,7 @@ class Scroller extends Component {
     var style    = horizontalScrollbarStyle
     var minWidth = props.scrollWidth
 
-    var scroller = <div xref="horizontalScroller" className="z-horizontal-scroller" style={{width: minWidth}} />
+    var scroller = <div ref="horizontalScroller" className="z-horizontal-scroller" style={{width: minWidth}} />
 
     if (IS_MAC){
         //needed for mac safari

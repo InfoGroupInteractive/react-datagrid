@@ -26437,6 +26437,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }, {
 	    key: 'componentDidMount',
 	    value: function componentDidMount() {
+	      this.mounted = true;
 	      this.fixHorizontalScrollbar();(this.props.onMount || emptyFn)(this);
 
 	      setTimeout(function () {
@@ -26444,16 +26445,21 @@ return /******/ (function(modules) { // webpackBootstrap
 	      }.bind(this), 0);
 	    }
 	  }, {
+	    key: 'componentWillUnmount',
+	    value: function componentWillUnmount() {
+	      this.mounted = false;
+	    }
+	  }, {
 	    key: 'fixHorizontalScrollbar',
 	    value: function fixHorizontalScrollbar() {
 
-	      var thisNode = (0, _reactDom.findDOMNode)(this);
+	      // const thisNode = this.mounted ? findDOMNode(this) : false;
 
-	      if (!thisNode) {
+	      if (!this.refs.horizontalScroller) {
 	        return;
 	      }
 
-	      this.horizontalScrollerNode = this.horizontalScrollerNode || thisNode.querySelector('.z-horizontal-scroller');
+	      this.horizontalScrollerNode = this.horizontalScrollerNode || this.refs.horizontalScroller;
 
 	      var dom = this.horizontalScrollerNode;
 
@@ -26519,7 +26525,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      var style = horizontalScrollbarStyle;
 	      var minWidth = props.scrollWidth;
 
-	      var scroller = _react2.default.createElement('div', { xref: 'horizontalScroller', className: 'z-horizontal-scroller', style: { width: minWidth } });
+	      var scroller = _react2.default.createElement('div', { ref: 'horizontalScroller', className: 'z-horizontal-scroller', style: { width: minWidth } });
 
 	      if (IS_MAC) {
 	        //needed for mac safari
