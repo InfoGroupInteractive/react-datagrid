@@ -64,11 +64,11 @@ module.exports = createReactClass({
         // var loadersSize = props.loadersSize
         var verticalScrollerSize = (props.totalLength + groupsCount) * props.rowHeight// + loadersSize
 
+
+        /* YM360 IL-291: fill empty space with blank rows */
         // var content = props.empty
         //     ? <div className="z-empty-text" style={props.emptyTextStyle}>{props.emptyText}</div>
         //     : <div {...props.tableProps} ref="table"/>
-
-        /* YM360 IL-291: fill empty space with blank rows */
         var content;
         if ( props.empty && props.fillEmptyRows ) {
             content = <div {...props.tableProps} ref="table">{this.fillEmptyRows()}</div>;

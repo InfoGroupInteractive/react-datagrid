@@ -333,10 +333,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	    },
 
 	    onDropColumn: function onDropColumn(index, dropIndex) {
-	        // if (typeof this.props.onColumnOrderChange === 'function' && typeof this.props.onSelectedCellChange === 'function' && this.props.selectCells) {
-	        //     this.props.onSelectedCellChange(null);
-	        // }
-
 	        ;(this.props.onColumnOrderChange || emptyFn)(index, dropIndex);
 	    },
 
@@ -433,23 +429,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	            toggleColumn: this.toggleColumn.bind(this, props),
 	            showMenu: this.showMenu,
-	            // filterMenuFactory : this.filterMenuFactory,
 	            menuColumn: state.menuColumn,
 	            columnMenuFactory: props.columnMenuFactory
-	            // selectCells      : props.selectCells,
-	            // onSelectedCellChange  : props.onSelectedCellChange,
-	            // startColIndex: state.startColIndex,
-	            // endColIndex: endColIndex,
-	            //
-	            // fixedColumnRendering: props.fixedColumnRendering,
-	            // fixedColumns     : props.fixedColumns
 	        });
 	    },
 
 	    prepareFooter: function prepareFooter(props, state) {
-	        // return (props.footerFactory || React.DOM.div)({
-	        //     className: 'z-footer-wrapper'
-	        // })
 	        return _react2.default.createElement('div', { className: 'z-footer-wrapper' });
 	    },
 
@@ -564,27 +549,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	        if (props.virtualRendering) {
 	            scrollTop = startIndex * props.rowHeight;
 	        }
-
-	        // var topLoader
-	        // var bottomLoader
-	        // var loadersSize = 0
-
-	        // if (props.virtualPagination){
-
-	        //     if (props.page < props.maxPage){
-	        //         loadersSize += 2 * props.rowHeight
-	        //         bottomLoader = <div style={{height: 2 * props.rowHeight, position: 'relative', width: props.columnFlexCount? 'calc(100% - ' + props.scrollbarSize + ')': props.minRowWidth - props.scrollbarSize}}>
-	        //             <LoadMask visible={true} style={{background: 'rgba(128, 128, 128, 0.17)'}}/>
-	        //         </div>
-	        //     }
-
-	        //     if (props.page > props.minPage){
-	        //         loadersSize += 2 * props.rowHeight
-	        //         topLoader = <div style={{height: 2 * props.rowHeight, position: 'relative', width: props.columnFlexCount? 'calc(100% - ' + props.scrollbarSize + ')': props.minRowWidth - props.scrollbarSize}}>
-	        //             <LoadMask visible={true} style={{background: 'rgba(128, 128, 128, 0.17)'}}/>
-	        //         </div>
-	        //     }
-	        // }
 
 	        var wrapperProps = assign({
 	            ref: 'wrapper',
@@ -25986,11 +25950,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	        // var loadersSize = props.loadersSize
 	        var verticalScrollerSize = (props.totalLength + groupsCount) * props.rowHeight; // + loadersSize
 
+
+	        /* YM360 IL-291: fill empty space with blank rows */
 	        // var content = props.empty
 	        //     ? <div className="z-empty-text" style={props.emptyTextStyle}>{props.emptyText}</div>
 	        //     : <div {...props.tableProps} ref="table"/>
-
-	        /* YM360 IL-291: fill empty space with blank rows */
 	        var content;
 	        if (props.empty && props.fillEmptyRows) {
 	            content = React.createElement(
@@ -26437,7 +26401,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }, {
 	    key: 'componentDidMount',
 	    value: function componentDidMount() {
-	      this.mounted = true;
 	      this.fixHorizontalScrollbar();(this.props.onMount || emptyFn)(this);
 
 	      setTimeout(function () {
@@ -26445,16 +26408,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	      }.bind(this), 0);
 	    }
 	  }, {
-	    key: 'componentWillUnmount',
-	    value: function componentWillUnmount() {
-	      this.mounted = false;
-	    }
-	  }, {
 	    key: 'fixHorizontalScrollbar',
 	    value: function fixHorizontalScrollbar() {
-
-	      // const thisNode = this.mounted ? findDOMNode(this) : false;
-
 	      if (!this.refs.horizontalScroller) {
 	        return;
 	      }
@@ -31418,8 +31373,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	var normalize = __webpack_require__(101);
 	var Cell = __webpack_require__(122);
 	var CellFactory = React.createFactory(Cell);
-	// var ReactMenu = require('react-menus')
-	// var ReactMenuFactory = React.createFactory(ReactMenu)
 
 	module.exports = createReactClass({
 	  displayName: 'ReactDataGrid.Row',
@@ -31462,7 +31415,6 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	    props.onMouseEnter = this.handleMouseEnter;
 	    props.onMouseLeave = this.handleMouseLeave;
-	    // props.onContextMenu = this.handleContextMenu
 	    props.onClick = this.handleRowClick;
 
 	    delete props.data;
@@ -31481,54 +31433,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	      this.props._onClick(this.props, event);
 	    }
 	  },
-
-	  // handleContextMenu: function(event){
-
-	  //   if (this.props.rowContextMenu){
-	  //     this.showMenu(event)
-	  //   }
-
-	  //   if (this.props.onContextMenu){
-	  //     this.props.onContextMenu(event)
-	  //   }
-	  // },
-
-	  // showMenu: function(event){
-	  //   var factory = this.props.rowContextMenu
-	  //   var alignTo = Region.from(event)
-
-	  //   var props = {
-	  //       style: {
-	  //           position: 'absolute'
-	  //       },
-	  //       rowProps: this.props,
-	  //       data    : this.props.data,
-	  //       alignTo : alignTo,
-	  //       alignPositions: [
-	  //           'tl-bl',
-	  //           'tr-br',
-	  //           'bl-tl',
-	  //           'br-tr'
-	  //       ],
-	  //       items: [
-	  //           {
-	  //               label: 'stop'
-	  //           }
-	  //       ]
-	  //   }
-
-	  //   var menu = factory(props)
-
-	  //   if (menu === undefined){
-	  //       menu = ReactMenuFactory(props)
-	  //   }
-
-	  //   event.preventDefault()
-
-	  //   this.props.showMenu(function(){
-	  //       return menu
-	  //   })
-	  // },
 
 	  handleMouseLeave: function handleMouseLeave(event) {
 	    this.setState({
