@@ -1,22 +1,24 @@
 'use strict';
 
 var React    = require('react')
-var ReactDOM    = require('react-dom')
+var ReactDOM = require('react-dom')
+var createReactClass = require('create-react-class');
+var PropTypes = require('prop-types');
 var assign   = require('object-assign')
-var Scroller = require('react-virtual-scroller')
+import Scroller from '../Scroller';
 
 function emptyFn(){}
 
-module.exports = React.createClass({
+module.exports = createReactClass({
 
     displayName: 'ReactDataGrid.Wrapper',
 
     propTypes: {
-        scrollLeft   : React.PropTypes.number,
-        scrollTop    : React.PropTypes.number,
-        scrollbarSize: React.PropTypes.number,
-        rowHeight   : React.PropTypes.any,
-        renderCount : React.PropTypes.number
+        scrollLeft   : PropTypes.number,
+        scrollTop    : PropTypes.number,
+        scrollbarSize: PropTypes.number,
+        rowHeight   : PropTypes.any,
+        renderCount : PropTypes.number
     },
 
     getDefaultProps: function(){
@@ -62,11 +64,11 @@ module.exports = React.createClass({
         // var loadersSize = props.loadersSize
         var verticalScrollerSize = (props.totalLength + groupsCount) * props.rowHeight// + loadersSize
 
+
+        /* YM360 IL-291: fill empty space with blank rows */
         // var content = props.empty
         //     ? <div className="z-empty-text" style={props.emptyTextStyle}>{props.emptyText}</div>
         //     : <div {...props.tableProps} ref="table"/>
-
-        /* YM360 IL-291: fill empty space with blank rows */
         var content;
         if ( props.empty && props.fillEmptyRows ) {
             content = <div {...props.tableProps} ref="table">{this.fillEmptyRows()}</div>;
