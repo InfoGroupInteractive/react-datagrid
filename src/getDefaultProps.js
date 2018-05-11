@@ -17,7 +17,6 @@ module.exports = function(){
         // virtualPagination: false,
 
         loading: null,
-        showLoadMask: true,
         columnMinWidth: 50,
         cellPadding: '0px 5px',
         headerPadding: '10px 5px',
@@ -43,8 +42,6 @@ module.exports = function(){
         emptyCls: 'z-empty',
         emptyTextStyle: null,
         emptyWrapperStyle: null,
-
-        loadMaskOverHeader: true,
 
         showCellBordersCls: 'z-cell-borders',
         showCellBorders: false,

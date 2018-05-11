@@ -5,7 +5,6 @@ import Component from 'react-class'
 import React from 'react';
 import { findDOMNode } from 'react-dom';
 
-const LoadMask   = require('react-load-mask')
 const assign     = require('object-assign')
 const DragHelper = require('drag-helper')
 const normalize  = require('react-style-normalizer')
@@ -15,8 +14,6 @@ const preventDefault = event => event && event.preventDefault()
 const signum         = x => x < 0? -1: 1
 const emptyFn        = () => {}
 const ABS            = Math.abs
-
-const LoadMaskFactory = React.createFactory(LoadMask)
 
 var horizontalScrollbarStyle = {}
 
@@ -118,28 +115,10 @@ const onScroll = function(orientation){
   }
 }
 
-/**
- * The scroller can have a load mask (loadMask prop is true by default),
- * you just need to specify loading=true to see it in action
- *
- * <Scroller loading={true} />
- *
- * If you don't want a load mask, specify
- *
- * <Scroller loadMask={false} />
- *
- * Or if you want to customize the loadMask factory, specify
- *
- * function mask(props) { return aMaskFactory(props) }
- * <Scroller loading={true} loadMask={mask}
- *
- */
 class Scroller extends Component {
 
   render(){
     var props = this.p = this.prepareProps(this.props)
-
-    var loadMask            = this.renderLoadMask(props)
     var horizontalScrollbar = this.renderHorizontalScrollbar(props)
     var verticalScrollbar   = this.renderVerticalScrollbar(props)
 
@@ -161,7 +140,6 @@ class Scroller extends Component {
     var renderProps = this.prepareRenderProps(props)
 
     return <div {...renderProps}>
-      {loadMask}
       <div className="z-content-wrapper" {...events}>
         {content}
         {verticalScrollbar}
@@ -366,26 +344,6 @@ class Scroller extends Component {
     return scrollbar
   }
 
-  renderLoadMask(props) {
-    if (props.loadMask){
-      var loadMaskProps = assign({ visible: props.loading }, props.loadMaskProps)
-
-      var defaultFactory = LoadMaskFactory
-      var factory = typeof props.loadMask == 'function'?
-              props.loadMask:
-              defaultFactory
-
-      var mask = factory(loadMaskProps)
-
-      if (mask === undefined){
-        //allow the specified factory to just modify props
-        //and then leave the rendering to the defaultFactory
-        mask = defaultFactory(loadMaskProps)
-      }
-
-      return mask
-    }
-  }
 
   ////////////////////////////////////////////////
   //
@@ -445,12 +403,6 @@ assign(Scroller.prototype, {
 })
 
 Scroller.propTypes = {
-  loadMask: PT.oneOfType([
-    PT.bool,
-    PT.func
-  ]),
-
-  loading : PT.bool,
   normalizeStyles: PT.bool,
 
   scrollTop : PT.number,
@@ -474,7 +426,6 @@ Scroller.propTypes = {
 
 Scroller.defaultProps = {
   'data-display-name': DISPLAY_NAME,
-  loadMask: true,
 
   virtualRendering: true, //FOR NOW, only true is supported
   scrollbarSize: 20,

@@ -8,7 +8,6 @@ var PropTypes = require('prop-types');
 var createReactClass = require('create-react-class');
 
 var assign   = require('object-assign')
-import LoadMask from 'react-load-mask'
 var Region   = require('region')
 var Column = require('./models/Column')
 
@@ -98,7 +97,6 @@ module.exports = createReactClass({
         withColumnMenu   : PropTypes.bool,
         cellEllipsis     : PropTypes.bool,
         sortable         : PropTypes.bool,
-        loadMaskOverHeader : PropTypes.bool,
         idProperty       : PropTypes.string.isRequired,
 
         //you can customize the column menu by specifying a factory
@@ -552,7 +550,6 @@ module.exports = createReactClass({
     prepareProps: function(thisProps, state){
         var props = assign({}, thisProps)
 
-        props.loading    = this.prepareLoading(props)
         props.data       = this.prepareData(props)
         props.dataSource = this.prepareDataSource(props)
         props.empty      = !props.data.length
@@ -573,11 +570,6 @@ module.exports = createReactClass({
         props.minRowWidth = props.totalColumnWidth + props.scrollbarSize
 
         return props
-    },
-
-    prepareLoading: function(props) {
-        var showLoadMask = props.showLoadMask || !this.isMounted() //ismounted check for initial load
-        return props.loading == null? showLoadMask && this.state.defaultLoading: props.loading
     },
 
     preparePaging: function(props, state) {

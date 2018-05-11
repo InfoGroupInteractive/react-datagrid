@@ -87,9 +87,6 @@ module.exports = createReactClass({
                 onMount={this.onMount}
                 preventDefaultHorizontal={true}
 
-                loadMask={!props.loadMaskOverHeader}
-                loading={props.loading}
-
                 scrollbarSize={props.scrollbarSize}
 
                 minVerticalScrollStep={props.rowHeight}

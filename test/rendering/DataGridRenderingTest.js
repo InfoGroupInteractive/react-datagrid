@@ -6,7 +6,6 @@ var TestUtils = React.addons.TestUtils
 
 var TABLE_CLASS         = 'z-table'
 var ROW_CLASS           = 'z-row'
-var LOADMASK			= 'loadmask'
 var COLUMN_HEADER_CLASS = 'z-column-header'
 var COL_MENU_BTN        = 'z-show-menu'
 var EMPTY_TEXT_CLASS	= 'z-empty-text'
@@ -19,35 +18,6 @@ var findWithClass = testUtils.findWithClass
 var tryWithClass  = testUtils.tryWithClass
 
 describe('DataGrid Test Suite - Rendering', function(){
-
-	it('Check loading controlled prop works as expected',function(done) {
-
-		// empty data array to test loading
-		var data = [];
-
-        var columns = [
-            { name: 'index', title: '#', width: 50 },
-            { name: 'firstName'},
-            { name: 'lastName'  },
-            { name: 'city' },
-            { name: 'email' }
-        ];
-
-        var table = render(
-        	DataGrid({
-                idProperty    : 'id',
-                dataSource    : data,
-                columns       : columns,
-                style		  : { height: 200 },
-                loading		  : true
-            })
-		);
-
-        var loadMask = tryWithClass(table,LOADMASK);
-        loadMask.should.not.be.empty
-
-		done()
-	})
 
 	it('Check emptyText works',function(done) {
 
